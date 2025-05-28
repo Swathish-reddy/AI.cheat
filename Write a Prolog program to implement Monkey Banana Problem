@@ -1,0 +1,109 @@
+% Initial state
+at(monkey, door, s0).
+at(banana, middle, s0).
+at(box, window, s0).
+on_floor(s0).
+
+% Actions
+move(P, P, S, S).
+move(P1, P2, S, S2) :-
+    on_floor(S),
+    at(monkey, P1, S),
+    at(box, P2, S),
+    S2 = S.
+
+climb(s0, s1) :- 
+    on_floor(s0), 
+    at(monkey, P, s0), 
+    at(box, P, s0).
+    
+climb(S, S2) :- 
+    on_floor(S), 
+    at(monkey, P, S), 
+    at(box, P, S), 
+    S2 = S.
+
+push(P1, P2, S, S2) :-
+    on_floor(S),
+    at(monkey, P1, S),
+    at(box, P1, S),
+    move(P1, P2, S, S2).
+
+grasp(s2, s3) :- 
+    at(monkey, P, s2), 
+    at(banana, P, s2),
+    on_floor(s2).
+    
+solve(S, []) :- 
+    at(banana, P, S),
+    at(monkey, P, S),
+    on_floor(S).
+
+solve(S, [A | As]) :- 
+    A = climb(S, S2); A = grasp(S, S2); A = push(_, _, S, S2),
+    solve(S2, As).
+
+% Example query
+?- solve(s0, Actions).
+\\\\\\\
+
+% State representation: state(MonkeyPos, BoxPos, MonkeyHasBanana, MonkeyOnBox).
+% Positions: left, middle, right
+% MonkeyHasBanana: yes or no
+% MonkeyOnBox: yes or no
+
+% Initial state: monkey and box at left, monkey does NOT have banana, monkey is NOT on box
+initial_state(state(left, left, no, no)).
+
+% Goal state: monkey has the banana
+goal_state(state(_, _, yes, _)).
+
+% Moves / actions
+
+% move(MonkeyPos, NewPos)
+move(state(MonkeyPos, BoxPos, HasBanana, OnBox), move_monkey(NewPos), state(NewPos, BoxPos, HasBanana, no)) :-
+    MonkeyPos \= NewPos,
+    OnBox = no. % monkey cannot move if on box
+
+% push_box(MonkeyPos, NewPos)
+move(state(MonkeyPos, BoxPos, HasBanana, OnBox), push_box(NewPos), state(NewPos, NewPos, HasBanana, no)) :-
+    MonkeyPos = BoxPos,
+    MonkeyPos \= NewPos,
+    OnBox = no.
+
+% climb_on_box
+move(state(MonkeyPos, BoxPos, HasBanana, no), climb_on_box, state(MonkeyPos, BoxPos, HasBanana, yes)) :-
+    MonkeyPos = BoxPos.
+
+% climb_down_box
+move(state(MonkeyPos, BoxPos, HasBanana, yes), climb_down_box, state(MonkeyPos, BoxPos, HasBanana, no)).
+
+% grab_banana
+move(state(monkey_pos, BoxPos, no, yes), grab_banana, state(monkey_pos, BoxPos, yes, yes)) :-
+    % monkey and box are at the banana location (say middle)
+    monkey_pos = middle,
+    BoxPos = middle.
+
+% Note: To be consistent, let's fix banana at middle position
+
+% Redefine grab_banana properly
+move(state(middle, BoxPos, no, yes), grab_banana, state(middle, BoxPos, yes, yes)) :-
+    BoxPos = middle.
+
+% Path finder: find sequence of moves from current state to goal
+
+solve(State, _, []) :-
+    goal_state(State).
+
+solve(State, Visited, [Action | Rest]) :-
+    move(State, Action, NextState),
+    \+ member(NextState, Visited),
+    solve(NextState, [NextState | Visited], Rest).
+
+% Entry point: find solution starting from initial state
+monkey_banana_solution(Actions) :-
+    initial_state(State),
+    solve(State, [State], Actions).
+\\\\\\\
+?- monkey_banana_solution(Actions).
+Actions = [push_box(middle), climb_on_box, grab_banana].

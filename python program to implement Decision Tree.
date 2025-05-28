@@ -1,0 +1,112 @@
+import math
+
+# Sample dataset: [feature1, feature2, ..., label]
+# Example: Weather data - ['Sunny', 'Hot', 'High Humidity', 'No']
+data = [
+    ['Sunny', 'Hot', 'High', 'No'],
+    ['Sunny', 'Hot', 'High', 'No'],
+    ['Overcast', 'Hot', 'High', 'Yes'],
+    ['Rain', 'Mild', 'High', 'Yes'],
+    ['Rain', 'Cool', 'Normal', 'Yes'],
+    ['Rain', 'Cool', 'Normal', 'No'],
+    ['Overcast', 'Cool', 'Normal', 'Yes'],
+    ['Sunny', 'Mild', 'High', 'No'],
+    ['Sunny', 'Cool', 'Normal', 'Yes'],
+    ['Rain', 'Mild', 'Normal', 'Yes'],
+    ['Sunny', 'Mild', 'Normal', 'Yes'],
+    ['Overcast', 'Mild', 'High', 'Yes'],
+    ['Overcast', 'Hot', 'Normal', 'Yes'],
+    ['Rain', 'Mild', 'High', 'No']
+]
+
+features = ['Outlook', 'Temperature', 'Humidity']
+
+def entropy(rows):
+    labels = [row[-1] for row in rows]
+    total = len(labels)
+    counts = {}
+    for label in labels:
+        counts[label] = counts.get(label, 0) + 1
+    ent = 0.0
+    for count in counts.values():
+        p = count / total
+        ent -= p * math.log2(p)
+    return ent
+
+def split_data(rows, feature_index, value):
+    left = []
+    right = []
+    for row in rows:
+        if row[feature_index] == value:
+            left.append(row)
+        else:
+            right.append(row)
+    return left, right
+
+def info_gain(rows, feature_index, value):
+    left, right = split_data(rows, feature_index, value)
+    p_left = len(left) / len(rows)
+    p_right = len(right) / len(rows)
+    gain = entropy(rows) - (p_left * entropy(left) + p_right * entropy(right))
+    return gain
+
+def majority_class(rows):
+    counts = {}
+    for row in rows:
+        label = row[-1]
+        counts[label] = counts.get(label, 0) + 1
+    return max(counts, key=counts.get)
+
+def build_tree(rows, feature_names):
+    if len(set(row[-1] for row in rows)) == 1:
+        return rows[0][-1]
+
+    if len(feature_names) == 0:
+        return majority_class(rows)
+
+    best_gain = 0
+    best_feature = None
+    best_value = None
+
+    for feature_index in range(len(feature_names)):
+        values = set(row[feature_index] for row in rows)
+        for value in values:
+            gain = info_gain(rows, feature_index, value)
+            if gain > best_gain:
+                best_gain = gain
+                best_feature = feature_index
+                best_value = value
+
+    if best_gain == 0:
+        return majority_class(rows)
+
+    left_rows, right_rows = split_data(rows, best_feature, best_value)
+
+    left_subtree = build_tree(left_rows, feature_names)
+    right_subtree = build_tree(right_rows, feature_names)
+
+    return {
+        'feature': feature_names[best_feature],
+        'value': best_value,
+        'left': left_subtree,
+        'right': right_subtree
+    }
+
+def classify(tree, feature_names, row):
+    if isinstance(tree, str):
+        return tree
+    feature_index = feature_names.index(tree['feature'])
+    if row[feature_index] == tree['value']:
+        return classify(tree['left'], feature_names, row)
+    else:
+        return classify(tree['right'], feature_names, row)
+
+# Build tree
+tree = build_tree(data, features)
+
+# Test classification
+test_sample = ['Sunny', 'Cool', 'High']  # Expected: No
+result = classify(tree, features, test_sample)
+
+print("Decision Tree:", tree)
+print(f"Test sample {test_sample} classified as:", result)

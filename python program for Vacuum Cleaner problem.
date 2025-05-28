@@ -1,0 +1,42 @@
+def vacuum_cleaner_agent(location, status):
+    actions = []
+    
+    if location == "A":
+        if status["A"] == "Dirty":
+            actions.append("Clean A")
+            status["A"] = "Clean"
+        actions.append("Move Right to B")
+
+        if status["B"] == "Dirty":
+            actions.append("Clean B")
+            status["B"] = "Clean"
+    elif location == "B":
+        if status["B"] == "Dirty":
+            actions.append("Clean B")
+            status["B"] = "Clean"
+        actions.append("Move Left to A")
+
+        if status["A"] == "Dirty":
+            actions.append("Clean A")
+            status["A"] = "Clean"
+
+    return actions, status
+
+# Initial Environment Status (can be changed)
+initial_location = "A"
+room_status = {
+    "A": "Dirty",
+    "B": "Dirty"
+}
+
+# Run agent
+print(f"Initial Location: {initial_location}")
+print(f"Initial Room Status: {room_status}")
+
+actions, final_status = vacuum_cleaner_agent(initial_location, room_status)
+
+print("\nActions Taken:")
+for step in actions:
+    print("-", step)
+
+print("\nFinal Room Status:", final_status)

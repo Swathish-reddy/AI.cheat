@@ -1,0 +1,41 @@
+% Database of individuals with names and DOBs
+person(john, '1990-05-15').
+person(susan, '1985-11-30').
+person(michael, '1995-02-10').
+person(emily, '2000-08-22').
+
+% Predicate to retrieve the DOB of a person
+get_dob(Name, DOB) :-
+    person(Name, DOB).
+out
+- get_dob(john, DOB).
+DOB = '1990-05-15'.
+
+?- get_dob(susan, DOB).
+DOB = '1985-11-30'.
+\\\\\\\\\\\\\\\\\\
+% Facts: person(Name, dob(Day, Month, Year)).
+person(john, dob(15, 4, 1990)).
+person(mary, dob(23, 11, 1985)).
+person(alice, dob(7, 8, 1992)).
+person(bob, dob(1, 1, 1980)).
+
+% Rule to find a person by name and get their DOB
+get_dob(Name, dob(Day, Month, Year)) :-
+    person(Name, dob(Day, Month, Year)).
+
+% Example rule to check if a person was born before a certain year
+born_before(Name, Year) :-
+    person(Name, dob(_, _, Y)),
+    Y < Year.
+
+out
+?- get_dob(mary, DOB).
+DOB = dob(23, 11, 1985).
+
+?- born_before(alice, 1995).
+true.
+
+?- born_before(bob, 1975).
+false.
+

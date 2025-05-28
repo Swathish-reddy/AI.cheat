@@ -1,0 +1,112 @@
+def print_board(board):
+    print("\n")
+    print(f" {board[0]} | {board[1]} | {board[2]} ")
+    print("---+---+---")
+    print(f" {board[3]} | {board[4]} | {board[5]} ")
+    print("---+---+---")
+    print(f" {board[6]} | {board[7]} | {board[8]} ")
+    print("\n")
+
+def check_win(board, player):
+    win_conditions = [
+        [0,1,2], [3,4,5], [6,7,8],  # rows
+        [0,3,6], [1,4,7], [2,5,8],  # columns
+        [0,4,8], [2,4,6]            # diagonals
+    ]
+    for condition in win_conditions:
+        if all(board[i] == player for i in condition):
+            return True
+    return False
+
+def check_draw(board):
+    return all(space != " " for space in board)
+
+def alphabeta(board, depth, alpha, beta, is_maximizing):
+    if check_win(board, "O"):
+        return 1
+    elif check_win(board, "X"):
+        return -1
+    elif check_draw(board):
+        return 0
+
+    if is_maximizing:
+        max_eval = -float('inf')
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = "O"
+                eval = alphabeta(board, depth + 1, alpha, beta, False)
+                board[i] = " "
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break  # Beta cut-off
+        return max_eval
+    else:
+        min_eval = float('inf')
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = "X"
+                eval = alphabeta(board, depth + 1, alpha, beta, True)
+                board[i] = " "
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break  # Alpha cut-off
+        return min_eval
+
+def best_move(board):
+    best_score = -float('inf')
+    move = -1
+    for i in range(9):
+        if board[i] == " ":
+            board[i] = "O"
+            score = alphabeta(board, 0, -float('inf'), float('inf'), False)
+            board[i] = " "
+            if score > best_score:
+                best_score = score
+                move = i
+    return move
+
+def tic_tac_toe_alphabeta():
+    board = [" "] * 9
+    print("You are X, AI is O.")
+    print_board(board)
+
+    while True:
+        # Player move
+        while True:
+            player_move = input("Enter your move (1-9): ")
+            if player_move.isdigit() and 1 <= int(player_move) <= 9:
+                player_move = int(player_move) - 1
+                if board[player_move] == " ":
+                    board[player_move] = "X"
+                    break
+                else:
+                    print("Spot taken, choose another.")
+            else:
+                print("Invalid input, enter 1-9.")
+
+        print_board(board)
+
+        if check_win(board, "X"):
+            print("You win! 🎉")
+            break
+        if check_draw(board):
+            print("It's a draw! 🤝")
+            break
+
+        # AI move
+        ai_move = best_move(board)
+        board[ai_move] = "O"
+        print("AI plays move:", ai_move + 1)
+        print_board(board)
+
+        if check_win(board, "O"):
+            print("AI wins! 😢")
+            break
+        if check_draw(board):
+            print("It's a draw! 🤝")
+            break
+
+if __name__ == "__main__":
+    tic_tac_toe_alphabeta()

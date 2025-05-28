@@ -1,0 +1,57 @@
+from collections import deque
+
+# Capacity of jugs
+JUG1 = 4
+JUG2 = 3
+GOAL = 2
+
+# To keep track of visited states
+visited = set()
+
+# Store the path of actions
+def print_path(path):
+    for state in path:
+        print(f"Jug1: {state[0]}L, Jug2: {state[1]}L")
+    print("\nGoal reached!")
+
+def is_valid(state):
+    return 0 <= state[0] <= JUG1 and 0 <= state[1] <= JUG2
+
+def bfs():
+    queue = deque()
+    queue.append(((0, 0), []))  # Initial state and empty path
+
+    while queue:
+        (x, y), path = queue.popleft()
+
+        # Skip visited states
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+
+        # Add current state to path
+        new_path = path + [(x, y)]
+
+        # Check goal
+        if x == GOAL or y == GOAL:
+            print_path(new_path)
+            return
+
+        # Generate all possible next states
+        next_states = [
+            (JUG1, y),        # Fill Jug1
+            (x, JUG2),        # Fill Jug2
+            (0, y),           # Empty Jug1
+            (x, 0),           # Empty Jug2
+            (min(x + y, JUG1), y - (min(x + y, JUG1) - x)),  # Pour Jug2 -> Jug1
+            (x - (min(x + y, JUG2) - y), min(x + y, JUG2))   # Pour Jug1 -> Jug2
+        ]
+
+        for state in next_states:
+            if is_valid(state):
+                queue.append((state, new_path))
+
+    print("No solution found.")
+
+# Run the solver
+bfs()

@@ -1,0 +1,50 @@
+import heapq
+
+# Sample graph: adjacency list with edge costs
+graph = {
+    'A': [('B', 1), ('C', 4)],
+    'B': [('C', 2), ('D', 5)],
+    'C': [('D', 1)],
+    'D': []
+}
+
+# Heuristic values (estimated cost from node to goal)
+heuristic = {
+    'A': 7,
+    'B': 6,
+    'C': 2,
+    'D': 0  # Goal node
+}
+
+def a_star(start, goal):
+    open_set = []
+    heapq.heappush(open_set, (heuristic[start], 0, start, [start]))  # (f, g, node, path)
+    visited = {}
+
+    while open_set:
+        f, g, current, path = heapq.heappop(open_set)
+
+        if current == goal:
+            return path, g
+
+        if current in visited and visited[current] <= g:
+            continue
+
+        visited[current] = g
+
+        for neighbor, cost in graph.get(current, []):
+            g_new = g + cost
+            f_new = g_new + heuristic[neighbor]
+            heapq.heappush(open_set, (f_new, g_new, neighbor, path + [neighbor]))
+
+    return None, float('inf')
+
+# Run A* from A to D
+start_node = 'A'
+goal_node = 'D'
+path, cost = a_star(start_node, goal_node)
+
+if path:
+    print(f"Path found: {' -> '.join(path)} with cost {cost}")
+else:
+    print("No path found.")

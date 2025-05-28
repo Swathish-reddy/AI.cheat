@@ -1,0 +1,36 @@
+import itertools
+
+# Distance matrix: distances[i][j] is distance from city i to city j
+# Example for 4 cities: A, B, C, D
+distances = [
+    [0, 10, 15, 20],   # From A
+    [10, 0, 35, 25],   # From B
+    [15, 35, 0, 30],   # From C
+    [20, 25, 30, 0]    # From D
+]
+
+# Number of cities
+n = len(distances)
+
+# All possible routes starting and ending at city 0 (A)
+cities = list(range(1, n))  # Cities excluding start (0)
+min_cost = float('inf')
+best_path = []
+
+for perm in itertools.permutations(cities):
+    current_path = [0] + list(perm) + [0]  # Complete tour
+    cost = 0
+    for i in range(len(current_path) - 1):
+        cost += distances[current_path[i]][current_path[i + 1]]
+
+    if cost < min_cost:
+        min_cost = cost
+        best_path = current_path
+
+# Convert city indices to names (optional)
+city_names = ['A', 'B', 'C', 'D']
+named_path = [city_names[i] for i in best_path]
+
+# Display result
+print("Best path:", " -> ".join(named_path))
+print("Minimum cost:", min_cost)

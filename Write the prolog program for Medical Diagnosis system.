@@ -1,0 +1,79 @@
+% Facts about symptoms and diseases
+symptom(fever, [flu, cold, malaria]).
+symptom(cough, [flu, cold]).
+symptom(headache, [flu, migraine]).
+symptom(rash, [allergy, measles]).
+symptom(runny_nose, [flu, cold]).
+symptom(fatigue, [flu, malaria]).
+symptom(sneezing, [cold, allergy]).
+symptom(chills, [malaria, flu]).
+
+% Rule to diagnose a disease based on symptoms
+diagnose(Disease, Symptoms) :-
+    symptom(Symptom, Diseases),
+    member(Symptom, Symptoms),
+    member(Disease, Diseases).
+
+% Predicate to find possible diseases based on symptoms
+possible_diseases(Symptoms, Diseases) :-
+    findall(Disease, diagnose(Disease, Symptoms), Diseases).
+OUTPUT:
+```
+?- possible_diseases([fever, cough], Diseases).
+Diseases = [flu, cold].
+
+?- possible_diseases([fever, headache], Diseases).
+Diseases = [flu, migraine].
+```
+\\\\\\\\\\\
+
+% disease(Name, [ListOfSymptoms])
+disease(flu, [fever, cough, headache, fatigue]).
+disease(cold, [cough, sneezing, runny_nose]).
+disease(malaria, [fever, chills, headache, sweating]).
+disease(diabetes, [frequent_urination, increased_thirst, fatigue]).
+disease(asthma, [shortness_of_breath, wheezing, coughing]).
+
+% Ask user if symptom is present
+has_symptom(Symptom) :-
+    format('Do you have ~w? (yes/no): ', [Symptom]),
+    read(Response),
+    Response == yes.
+
+% Check if all symptoms in list are present
+has_all_symptoms([]).
+has_all_symptoms([Symptom|Rest]) :-
+    has_symptom(Symptom),
+    has_all_symptoms(Rest).
+
+% Diagnose diseases by checking symptoms
+diagnose(Disease) :-
+    disease(Disease, Symptoms),
+    has_all_symptoms(Symptoms).
+
+% Start diagnosis - try all diseases, list possible matches
+start_diagnosis :-
+    findall(Disease, diagnose(Disease), Diseases),
+    ( Diseases = [] ->
+        write('No matching disease found based on symptoms.'), nl
+    ; write('Possible diagnoses:'), nl,
+      print_diseases(Diseases)
+    ).
+
+print_diseases([]).
+print_diseases([H|T]) :-
+    format('- ~w~n', [H]),
+    print_diseases(T).
+\\\\\\\\\\
+?- start_diagnosis.
+
+Sample Interaction:
+nginx
+Copy
+Edit
+Do you have fever? (yes/no): yes.
+Do you have cough? (yes/no): yes.
+Do you have headache? (yes/no): no.
+Do you have fatigue? (yes/no): yes.
+Possible diagnoses:
+- flu

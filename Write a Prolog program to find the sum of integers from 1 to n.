@@ -1,0 +1,30 @@
+sum(1, 1).
+sum(N, Result) :-
+    N > 1,
+    N1 is N - 1,
+    sum(N1, SubResult),
+    Result is N + SubResult.
+
+OUTPUT:
+?- sum(5, Result).
+Result = 15.
+
+?- sum(10, Result).
+Result = 55.
+
+?- sum(1, Result).
+Result = 1.
+\\\\\\\\\\\\
+
+% Base case: sum from 1 to 1 is 1
+sum_to_n(1, 1).
+
+% Recursive case: sum_to_n(N, Sum) = N + sum_to_n(N-1, Sum1)
+sum_to_n(N, Sum) :-
+    N > 1,
+    N1 is N - 1,
+    sum_to_n(N1, Sum1),
+    Sum is Sum1 + N.
+out
+?- sum_to_n(5, Sum).
+Sum = 15.

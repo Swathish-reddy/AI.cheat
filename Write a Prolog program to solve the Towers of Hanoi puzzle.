@@ -1,0 +1,48 @@
+% Move a single disk from Source peg to Destination peg
+move_disk(1, Source, Destination, _) :-
+    write('Move disk 1 from '), write(Source), write(' to '), write(Destination), nl.
+
+% Move N disks from Source peg to Destination peg using Auxiliary peg
+move_disk(N, Source, Destination, Auxiliary) :-
+    N > 1,
+    N1 is N - 1,
+    move_disk(N1, Source, Auxiliary, Destination),
+    write('Move disk '), write(N), write(' from '), write(Source), write(' to '), write(Destination), nl,
+    move_disk(N1, Auxiliary, Destination, Source).
+
+% Solve the Towers of Hanoi puzzle with N disks
+towers_of_hanoi(N) :-
+    move_disk(N, 'Source', 'Destination', 'Auxiliary').OUTPUT:
+```
+Move disk 1 from Source to Destination
+Move disk 2 from Source to Auxiliary
+Move disk 1 from Destination to Auxiliary
+Move disk 3 from Source to Destination
+Move disk 1 from Auxiliary to Source
+Move disk 2 from Auxiliary to Destination
+Move disk 1 from Source to Destination
+```
+\\\\\\\\\\\\\\
+% hanoi(NumberOfDisks, SourcePeg, TargetPeg, AuxiliaryPeg).
+% It prints the sequence of moves.
+
+hanoi(0, _, _, _) :- !.  % Base case: no disks to move, do nothing.
+
+hanoi(N, Source, Target, Auxiliary) :-
+    N > 0,
+    M is N - 1,
+    % Move top N-1 disks from Source to Auxiliary
+    hanoi(M, Source, Auxiliary, Target),
+    % Move the largest disk from Source to Target
+    format('Move disk ~w from ~w to ~w~n', [N, Source, Target]),
+    % Move the N-1 disks from Auxiliary to Target
+    hanoi(M, Auxiliary, Target, Source).
+\\\\\
+Move disk 1 from left to right
+Move disk 2 from left to middle
+Move disk 1 from right to middle
+Move disk 3 from left to right
+Move disk 1 from middle to left
+Move disk 2 from middle to right
+Move disk 1 from left to right
+true.

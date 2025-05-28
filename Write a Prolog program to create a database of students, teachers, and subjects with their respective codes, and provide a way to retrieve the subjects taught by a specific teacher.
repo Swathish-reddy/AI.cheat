@@ -1,0 +1,65 @@
+% Database of students, teachers, and subjects with codes
+entity(student(john), 'S101').
+entity(student(lisa), 'S102').
+entity(teacher(mary), 'T201').
+entity(teacher(david), 'T202').
+entity(subject(math), 'M301').
+entity(subject(english), 'E302').
+entity(subject(history), 'H303').
+
+% Predicate to retrieve subjects taught by a teacher
+subjects_taught_by_teacher(TeacherName, Subjects) :-
+    entity(teacher(TeacherName), TeacherCode),
+    findall(Subject, (entity(subject(Subject), Code), teaches(Code, TeacherCode)), Subjects).
+
+% Predicate to check if a teacher teaches a specific subject
+teaches(SubjectCode, TeacherCode) :-
+    entity(subject(Subject), SubjectCode),
+    entity(teacher(Teacher), TeacherCode),
+    teaches_relation(Teacher, Subject).
+
+% Relationships between teachers and subjects
+teaches_relation(mary, math).
+teaches_relation(david, english).
+teaches_relation(david, history).
+
+OUTPUT:
+```prolog
+?- subjects_taught_by_teacher(mary, Subjects).
+Subjects = [math].
+
+?- subjects_taught_by_teacher(david, Subjects).
+Subjects = [english, history].
+\\\\\\\\\\
+% Students: student(Name, StudentCode).
+student(alice, s001).
+student(bob, s002).
+student(charlie, s003).
+
+% Teachers: teacher(Name, TeacherCode).
+teacher(mr_smith, t001).
+teacher(ms_jones, t002).
+teacher(dr_brown, t003).
+
+% Subjects: subject(SubjectName, SubjectCode).
+subject(math, sub001).
+subject(english, sub002).
+subject(science, sub003).
+subject(history, sub004).
+
+% teaches(TeacherName, SubjectCode).
+teaches(mr_smith, sub001).    % Mr. Smith teaches Math
+teaches(ms_jones, sub002).    % Ms. Jones teaches English
+teaches(dr_brown, sub003).    % Dr. Brown teaches Science
+teaches(mr_smith, sub004).    % Mr. Smith also teaches History
+
+% Query to find subjects taught by a teacher
+% teacher_subjects(+TeacherName, -SubjectName)
+teacher_subjects(TeacherName, SubjectName) :-
+    teaches(TeacherName, SubjectCode),
+    subject(SubjectName, SubjectCode).
+
+out
+?- teacher_subjects(mr_smith, Subject).
+Subject = math ;
+Subject = history.

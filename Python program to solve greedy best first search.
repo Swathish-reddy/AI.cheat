@@ -1,0 +1,56 @@
+import heapq
+
+# Sample graph: adjacency list with edge costs
+graph = {
+    'A': [('B', 1), ('C', 3)],
+    'B': [('D', 1), ('E', 3)],
+    'C': [('F', 5)],
+    'D': [],
+    'E': [('G', 2)],
+    'F': [],
+    'G': []
+}
+
+# Heuristic values (estimated cost to goal)
+heuristic = {
+    'A': 7,
+    'B': 6,
+    'C': 5,
+    'D': 4,
+    'E': 2,
+    'F': 1,
+    'G': 0  # Goal node
+}
+
+def greedy_best_first_search(start, goal):
+    visited = set()
+    priority_queue = []
+    heapq.heappush(priority_queue, (heuristic[start], start, [start]))
+
+    while priority_queue:
+        h, current, path = heapq.heappop(priority_queue)
+
+        if current in visited:
+            continue
+        visited.add(current)
+
+        if current == goal:
+            return path
+
+        for neighbor, cost in graph.get(current, []):
+            if neighbor not in visited:
+                heapq.heappush(priority_queue, (heuristic[neighbor], neighbor, path + [neighbor]))
+
+    return None
+
+# Run the algorithm
+start_node = 'A'
+goal_node = 'G'
+result = greedy_best_first_search(start_node, goal_node)
+
+# Display result
+if result:
+    print("Path found using Greedy Best-First Search:")
+    print(" -> ".join(result))
+else:
+    print("No path found.")

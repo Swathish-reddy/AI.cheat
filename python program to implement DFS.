@@ -1,0 +1,32 @@
+# Define the graph using adjacency list
+graph = {
+    'A': ['B', 'C'],
+    'B': ['D', 'E'],
+    'C': ['F'],
+    'D': [],
+    'E': ['G'],
+    'F': [],
+    'G': []
+}
+
+def dfs(graph, start):
+    visited = set()
+    stack = [start]
+    result = []
+
+    while stack:
+        node = stack.pop()
+        if node not in visited:
+            visited.add(node)
+            result.append(node)
+
+            # Add neighbors in reverse to maintain left-to-right order
+            stack.extend(reversed(graph[node]))
+    return result
+
+# Run DFS
+start_node = 'A'
+dfs_result = dfs(graph, start_node)
+
+# Print result
+print("DFS traversal from node", start_node, "->", " -> ".join(dfs_result))

@@ -1,0 +1,114 @@
+% Facts about the graph's edges and their costs
+edge(a, b, 2).
+edge(a, c, 5).
+edge(b, d, 3).
+edge(c, e, 4).
+edge(d, g, 1).
+edge(e, g, 7).
+
+% Best First Search algorithm
+best_first_search(Start, Goal) :-
+    empty_priority_queue(EmptyQueue),
+    add_to_queue(Start, EmptyQueue, Queue),
+    search(Goal, Queue).
+
+search(Goal, Queue) :-
+    remove_from_queue(Goal, Queue, _), % Goal found
+    format('Goal ~w found.~n', [Goal]).
+
+search(Goal, Queue) :-
+    remove_from_queue(Node, Queue, RestQueue),
+    findall(Child, edge(Node, Child, _), Children),
+    add_list_to_queue(Children, RestQueue, NewQueue),
+    search(Goal, NewQueue).
+
+% Priority queue implementation
+empty_priority_queue([]).
+
+add_to_queue(Node, Queue, NewQueue) :-
+    heuristic(Node, H),
+    insert_queue(Node, H, Queue, NewQueue).
+
+add_list_to_queue([], Queue, Queue).
+add_list_to_queue([Node | RestNodes], Queue, NewQueue) :-
+    add_to_queue(Node, Queue, TempQueue),
+    add_list_to_queue(RestNodes, TempQueue, NewQueue).
+
+remove_from_queue(Node, Queue, RestQueue) :-
+    del_queue(Node, _, Queue, RestQueue).
+
+insert_queue(Node, H, [], [(Node, H)]).
+
+insert_queue(Node, H, [(Node2, H2) | RestQueue], [(Node, H), (Node2, H2) | RestQueue]) :-
+    H =< H2.
+
+insert_queue(Node, H, [(Node2, H2) | RestQueue], [(Node2, H2) | NewRestQueue]) :-
+    H > H2,
+    insert_queue(Node, H, RestQueue, NewRestQueue).
+
+del_queue(First, First, [(First, H) | RestQueue], RestQueue).
+
+del_queue(Element, First, [(Element2, H) | RestQueue], [(Element2, H) | NewRestQueue]) :-
+    Element \= Element2,
+    del_queue(Element, First, RestQueue, NewRestQueue).
+
+% Heuristic function (dummy, you can replace this with real heuristics)
+heuristic(_, 0).
+
+% Example query
+?- best_first_search(a, g).
+
+\\\\\\\\\\\\\
+% Example graph edges with costs
+edge(a, b, 1).
+edge(a, c, 3).
+edge(b, d, 1).
+edge(c, d, 1).
+edge(b, e, 4).
+edge(d, f, 2).
+edge(e, f, 1).
+
+% Heuristic function: estimated cost from Node to goal 'f'
+heuristic(a, f, 5).
+heuristic(b, f, 4).
+heuristic(c, f, 2).
+heuristic(d, f, 1).
+heuristic(e, f, 2).
+heuristic(f, f, 0).
+
+% best_first_search(+Start, +Goal, -Path, -Cost)
+best_first_search(Start, Goal, Path, Cost) :-
+    heuristic(Start, Goal, H),
+    % Open list: list of [EstimatedTotalCost, CostSoFar, CurrentNode, PathSoFar]
+    best_first([[H, 0, Start, [Start]]], Goal, RevPath, Cost),
+    reverse(RevPath, Path).
+
+% best_first(+OpenList, +Goal, -Path, -Cost)
+best_first(OpenList, Goal, Path, Cost) :-
+    OpenList = [[_, CostSoFar, CurrentNode, PathSoFar] | _],
+    CurrentNode = Goal,
+    Path = PathSoFar,
+    Cost = CostSoFar.
+
+best_first(OpenList, Goal, Path, Cost) :-
+    OpenList = [[_, CostSoFar, CurrentNode, PathSoFar] | RestOpen],
+    findall(
+        [F, NewCost, NextNode, [NextNode | PathSoFar]],
+        ( edge(CurrentNode, NextNode, StepCost),
+          \+ member(NextNode, PathSoFar), % avoid cycles
+          NewCost is CostSoFar + StepCost,
+          heuristic(NextNode, Goal, H),
+          F is NewCost + H
+        ),
+        Successors
+    ),
+    append(RestOpen, Successors, NewOpenUnsorted),
+    sort(0, @=<, NewOpenUnsorted, NewOpen), % sort by F value
+    best_first(NewOpen, Goal, Path, Cost).
+
+\\\\\\\\\\\\\
+
+?- best_first_search(a, f, Path, Cost).
+
+Path = [a, b, d, f],
+Cost = 4.
